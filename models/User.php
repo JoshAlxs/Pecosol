@@ -1,0 +1,160 @@
+<?php
+// models/User.php
+
+require_once __DIR__ . '/../config/database.php';
+
+class User {
+    private $conn;
+    private $table = 'users';
+
+    public function __construct() {
+        $this->conn = Database::connect();
+    }
+
+    /**
+     * findByUsername($username)
+     * - Busca en la tabla 'users' un usuario cuyo 'username' coincida con $username.
+     * - Devuelve un objeto (PDO::FETCH_OBJ) con las columnas de la fila, o false si no existe.
+     */
+    public function findByUsername(string $username) {
+        $sql = "SELECT * FROM {$this->table} WHERE username = :username LIMIT 1";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * findById($id)
+     * - Busca un usuario por su ID.
+     * - Devuelve un objeto (PDO::FETCH_OBJ) con las columnas de la fila, o false si no existe.
+     */
+    public function findById(int $id) {
+        $sql = "SELECT * FROM {$this->table} WHERE id = :id LIMIT 1";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * getAllEmployees()
+     * - Devuelve todos los usuarios con rol = 'employee' como arreglo de objetos.
+     */
+    public function getAllEmployees(): array {
+        $sql  = "SELECT * FROM {$this->table} WHERE role = 'employee' ORDER BY full_name";
+        $stmt = $this->conn->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * create($username, $passwordPlain, $fullName, $email, $role)
+     * - Crea un nuevo usuario en la tabla 'users'.
+     * - Genera un hash BCRYPT de la contraseña en texto plano.
+     * - Devuelve true si la inserción fue exitosa, o false en caso contrario.
+     */
+    public function create(
+        string $username,
+        string $passwordPlain,
+        string $fullName,
+        string $email,
+        string $role
+    ): bool {
+        $hashedPassword = password_hash($passwordPlain, PASSWORD_BCRYPT);
+
+        $sql = "
+            INSERT INTO {$this->table} 
+              (username, password, full_name, email, role)
+            VALUES 
+              (:username, :password, :full_name, :email, :role)
+        ";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':username',  $username);
+        $stmt->bindParam(':password',  $hashedPassword);
+        $stmt->bindParam(':full_name', $fullName);
+        $stmt->bindParam(':email',     $email);
+        $stmt->bindParam(':role',      $role);
+        return $stmt->execute();
+    }
+
+    /**
+     * update($id, $fullName, $email, $role)
+     * - Actualiza datos básicos de usuario (full_name, email, role).
+     * - Devuelve true si la actualización fue exitosa, o false en caso contrario.
+     */
+    public function update(int $id, string $fullName, string $email, string $role): bool {
+        $sql = "
+            UPDATE {$this->table}
+            SET full_name = :full_name,
+                email     = :email,
+                role      = :role
+            WHERE id = :id
+        ";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':full_name', $fullName);
+        $stmt->bindParam(':email',     $email);
+        $stmt->bindParam(':role',      $role);
+        $stmt->bindParam(':id',        $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    /**
+     * updatePassword($id, $passwordPlain)
+     * - Cambia la contraseña de un usuario existente.
+     * - Genera un nuevo hash BCRYPT para la contraseña en texto plano.
+     * - Devuelve true si la actualización fue exitosa, o false en caso contrario.
+     */
+    public function updatePassword(int $id, string $passwordPlain): bool {
+        $hashedPassword = password_hash($passwordPlain, PASSWORD_BCRYPT);
+
+        $sql = "
+            UPDATE {$this->table}
+            SET password = :password
+            WHERE id = :id
+        ";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':password', $hashedPassword);
+        $stmt->bindParam(':id',       $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    /**
+     * delete($id)
+     * - Elimina un usuario por su ID.
+     * - Devuelve true si la eliminación fue exitosa, o false en caso contrario.
+     */
+    public function delete(int $id): bool {
+        $sql = "DELETE FROM {$this->table} WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    /**
+     * countSalesByUser($userId)
+     * - Devuelve la cantidad de ventas que tiene un usuario específico.
+     * - Útil para evitar eliminar empleado que ya registró ventas.
+     */
+    public function countSalesByUser(int $userId): int {
+        // Asume que existe la tabla 'sales' con columna user_id
+        $sql = "
+            SELECT COUNT(*) AS total
+            FROM sales
+            WHERE user_id = :user_id
+        ";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_OBJ);
+        return (int) $row->total;
+    }
+
+    /**
+     * verifyPassword($plainPassword, $hashedPassword)
+     * - Compara la contraseña en texto plano con el hash almacenado usando password_verify.
+     * - Devuelve true si coinciden, false en caso contrario.
+     */
+    public function verifyPassword(string $plainPassword, string $hashedPassword): bool {
+        return password_verify($plainPassword, $hashedPassword);
+    }
+}

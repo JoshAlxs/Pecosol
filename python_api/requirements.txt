@@ -1,0 +1,22 @@
+# Dependencias de FastAPI Chatbot Service - Bodeshop
+# Python 3.8+
+
+# Framework FastAPI
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Base de datos MySQL
+mysql-connector-python==8.2.0
+
+# OpenAI API
+openai==1.3.5
+
+# Variables de entorno
+python-dotenv==1.0.0
+
+# Utilidades
+python-multipart==0.0.6
+
+# CORS
+aiofiles==23.2.1

@@ -1,0 +1,21 @@
+{
+  "name": "tu-usuario/bodeshop",
+  "description": "Proyecto bodeshop MVC",
+  "version": "1.0.0",
+  "require": {
+    "openai-php/client": "^0.10.0",
+    "symfony/http-client": "^7.3",
+    "nyholm/psr7": "^1.8"
+  },
+  "autoload": {
+    "classmap": [
+      "controllers/",
+      "models/"
+    ]
+  },
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true
+    }
+  }
+}
