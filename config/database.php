@@ -4,7 +4,7 @@
 class Database {
     // Cambia estos datos si tu usuario/contraseña de MySQL difieren
     private static $host     = "localhost";
-    private static $db_name  = "bodeshop_db";
+    private static $db_name  = "pecosol_db";
     private static $username = "root";
     private static $password = "";   // Si tu XAMPP tiene contraseña, colócala aquí
     public static  $conn;

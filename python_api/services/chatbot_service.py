@@ -73,7 +73,7 @@ class ChatbotService:
         """
         Construir el prompt del sistema con el contexto de la base de datos
         """
-        base_prompt = """Eres un asistente IA para Bodeshop (Pecosol), una tienda de productos. 
+        base_prompt = """Eres un asistente IA para Pecosol, una tienda de productos. 
 Tu rol es ayudar al administrador con información sobre:
 - Inventario y productos
 - Ventas y estadísticas

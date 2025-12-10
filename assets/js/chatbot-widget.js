@@ -43,7 +43,7 @@ class ChatbotWidget {
                 
                 <div class="chatbot-widget-messages" id="chatbotMessages">
                     <div class="welcome-message">
-                        <h4>¡Hola! 👋 Soy tu asistente IA de Bodeshop</h4>
+                        <h4>¡Hola! 👋 Soy tu asistente IA de Pecosol</h4>
                         <ul>
                             <li>Consultar inventario y stock</li>
                             <li>Analizar ventas y estadísticas</li>

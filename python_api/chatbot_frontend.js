@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkPythonServerStatus();
     
     // Mensaje de bienvenida
-    addBotMessage("¡Hola! 👋 Soy tu asistente IA de Bodeshop. Puedo ayudarte con información sobre tu inventario, ventas y empleados en tiempo real.");
+    addBotMessage("¡Hola! 👋 Soy tu asistente IA de Pecosol. Puedo ayudarte con información sobre tu inventario, ventas y empleados en tiempo real.");
 });
 
 /**

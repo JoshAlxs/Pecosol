@@ -140,7 +140,7 @@ $username = $_SESSION['username'] ?? 'Empleado';
     <!-- Branding con ícono -->
     <a href="<?php echo BASE_URL; ?>index.php?controller=dashboard&action=employeeHome" class="emp-brand">
       <img src="<?php echo BASE_URL; ?>assets/img/LogoPecosol.png" alt="LogoPecosol">
-      BodeShop <small>Empleado</small>
+      Pecosol <small>Empleado</small>
     </a>
 
     <!-- Enlaces y usuario -->

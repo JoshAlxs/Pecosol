@@ -16,7 +16,7 @@ class DatabaseService:
     def __init__(self):
         self.config = {
             'host': os.getenv('DB_HOST', 'localhost'),
-            'database': os.getenv('DB_NAME', 'bodeshop'),
+            'database': os.getenv('DB_NAME', 'pecosol_db'),
             'user': os.getenv('DB_USER', 'root'),
             'password': os.getenv('DB_PASSWORD', ''),
             'port': int(os.getenv('DB_PORT', '3306'))

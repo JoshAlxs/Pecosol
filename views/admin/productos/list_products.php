@@ -10,7 +10,7 @@ unset($_SESSION['error_product_delete']);
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Listado de Productos | Administrador de BodeShop</title>
+    <title>Listado de Productos | Administrador de Pecosol</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Favicon -->
