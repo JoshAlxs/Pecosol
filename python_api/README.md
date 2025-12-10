@@ -1,4 +1,4 @@
-# 🤖 FastAPI Chatbot Service - Bodeshop
+# 🤖 FastAPI Chatbot Service - Pecosol
 
 Microservicio Python con FastAPI para el chatbot con IA y acceso directo a la base de datos MySQL.
 

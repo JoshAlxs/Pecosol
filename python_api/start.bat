@@ -1,7 +1,7 @@
 @echo off
 cd /d "%~dp0"
 echo ====================================
-echo   Bodeshop - FastAPI Chatbot Server
+echo   Pecosol - FastAPI Chatbot Server
 echo ====================================
 echo.
 echo Directorio actual: %CD%

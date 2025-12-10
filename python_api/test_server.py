@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="Bodeshop Chatbot API Test")
+app = FastAPI(title="Pecosol Chatbot API Test")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,7 +21,7 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {
-        "service": "Bodeshop Chatbot API",
+        "service": "Pecosol Chatbot API",
         "status": "running",
         "message": "Servidor funcionando correctamente"
     }
