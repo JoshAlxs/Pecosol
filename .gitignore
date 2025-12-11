@@ -1,0 +1,53 @@
+# Archivos de entorno con credenciales sensibles
+.env
+python_api/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Bases de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~
+
+# Composer (PHP)
+/vendor/
+composer.lock
+
+# Node modules (si usas npm)
+node_modules/
+package-lock.json
+
+# Archivos de IDE
+.idea/
+*.iml
