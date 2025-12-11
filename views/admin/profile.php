@@ -16,6 +16,11 @@ require_once __DIR__ . '/partials/header.php';
 // Definir estas variables antes de cargarlas
 $currentController = $_GET['controller'] ?? '';
 $currentAction = $_GET['action'] ?? '';
+
+// Validar que $user existe (viene del controller)
+if (!isset($user) || !is_object($user)) {
+    die('Error: No se pudo cargar la información del usuario.');
+}
 ?>
 
 <style>

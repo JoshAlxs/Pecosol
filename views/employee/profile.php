@@ -12,6 +12,11 @@
 
 <?php
 require_once __DIR__ . '/partials/header.php';
+
+// Validar que $user existe (viene del controller)
+if (!isset($user) || !is_object($user)) {
+    die('Error: No se pudo cargar la información del usuario.');
+}
 ?>
 
 <style>
