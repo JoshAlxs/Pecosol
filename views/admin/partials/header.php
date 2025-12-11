@@ -209,6 +209,7 @@ $currentAction     = $_GET['action'] ?? '';
     <!-- Usuario -->
     <div class="user">
       <span>Bienvenido, <strong><?php echo htmlspecialchars($username); ?></strong></span>
+      <a href="<?php echo BASE_URL; ?>?controller=admin&action=profile" style="margin-right: 10px; color: #00fff0; text-decoration: none;">👤 Mi Perfil</a>
       <a class="logout" href="<?php echo BASE_URL; ?>?controller=auth&action=logout">Cerrar sesión</a>
     </div>
   </nav>

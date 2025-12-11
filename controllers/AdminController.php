@@ -551,5 +551,70 @@ class AdminController {
         header('Location: index.php?controller=admin&action=listSalesAdmin');
         exit;
     }
+
+    /**************************************************************************
+     * PERFIL DE USUARIO
+     **************************************************************************/
+
+    public function profile() {
+        $userId = $_SESSION['user_id'];
+        $user = $this->userModel->findById($userId);
+        require_once __DIR__ . '/../views/admin/profile.php';
+    }
+
+    public function updateProfile() {
+        $userId = $_SESSION['user_id'];
+        
+        $username = trim($_POST['username'] ?? '');
+        $fullName = trim($_POST['full_name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+
+        // Validaciones básicas
+        if (empty($username) || empty($fullName) || empty($email)) {
+            $_SESSION['error'] = 'Todos los campos son obligatorios (excepto contraseña).';
+            header('Location: index.php?controller=admin&action=profile');
+            exit;
+        }
+
+        // Actualizar información básica
+        $updated = $this->userModel->updateProfile($userId, $username, $fullName, $email);
+        
+        if (!$updated) {
+            $_SESSION['error'] = 'No se pudo actualizar el perfil.';
+            header('Location: index.php?controller=admin&action=profile');
+            exit;
+        }
+
+        // Actualizar sesión con nuevo username
+        $_SESSION['username'] = $username;
+        $_SESSION['full_name'] = $fullName;
+
+        // Si desea cambiar contraseña
+        if (!empty($newPassword)) {
+            if ($newPassword !== $confirmPassword) {
+                $_SESSION['error'] = 'Las contraseñas nuevas no coinciden.';
+                header('Location: index.php?controller=admin&action=profile');
+                exit;
+            }
+
+            // Verificar contraseña actual
+            $user = $this->userModel->findById($userId);
+            if (!$this->userModel->verifyPassword($currentPassword, $user->password)) {
+                $_SESSION['error'] = 'La contraseña actual es incorrecta.';
+                header('Location: index.php?controller=admin&action=profile');
+                exit;
+            }
+
+            // Actualizar contraseña
+            $this->userModel->updatePassword($userId, $newPassword);
+        }
+
+        $_SESSION['success'] = 'Perfil actualizado exitosamente.';
+        header('Location: index.php?controller=admin&action=profile');
+        exit;
+    }
 }
 

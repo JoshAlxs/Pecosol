@@ -51,11 +51,23 @@ class ChatbotService:
                 recent_sales = await self.db_service.get_recent_sales(limit=10)
                 context['sales_statistics'] = sales_stats
                 context['recent_sales'] = recent_sales[:5]
+                
+                # Si pregunta específicamente por ventas de hoy/día
+                if any(word in message_lower for word in ['hoy', 'día', 'dia', 'actual', 'diaria', 'diario']):
+                    today_sales = await self.db_service.get_today_sales()
+                    context['today_sales'] = today_sales
+                    logger.info(f"📅 Ventas de hoy: {today_sales['total_sales']} ventas, ${today_sales['total_revenue']:.2f}")
             
             # Si pregunta sobre empleados
             if any(word in message_lower for word in ['empleado', 'vendedor', 'personal', 'trabajador']):
                 employees = await self.db_service.get_employees_info()
                 context['employees'] = employees
+                
+                # Si pregunta por ventas de empleados hoy
+                if any(word in message_lower for word in ['hoy', 'día', 'dia', 'actual']):
+                    employees_today = await self.db_service.get_employees_today_sales()
+                    context['employees_today'] = employees_today
+                    logger.info(f"👥 Empleados con ventas hoy: {len([e for e in employees_today if e['sales_today'] > 0])}")
             
             # Si no hay contexto específico, dar overview general
             if not context:
@@ -76,12 +88,24 @@ class ChatbotService:
         base_prompt = """Eres un asistente IA para Pecosol, una tienda de productos. 
 Tu rol es ayudar al administrador con información sobre:
 - Inventario y productos
-- Ventas y estadísticas
+- Ventas y estadísticas (incluyendo ventas del día actual)
 - Empleados y su rendimiento
 - Análisis de negocio en tiempo real
 
-Responde de manera concisa, profesional y útil. Usa los datos proporcionados para dar respuestas precisas.
-Si no tienes información suficiente, indícalo claramente.
+IMPORTANTE: Tienes acceso COMPLETO a la base de datos en tiempo real. 
+Los datos que se te proporcionan son ACTUALES y puedes responder con confianza sobre:
+- Ventas realizadas HOY
+- Rendimiento de empleados HOY
+- Estado actual del inventario
+- Cualquier estadística del negocio
+
+ACLARACIÓN CRÍTICA sobre los datos:
+- Cuando veas "employee_name" o "Vendedor:", se refiere al EMPLEADO/VENDEDOR que realizó la venta (el trabajador de la tienda)
+- El sistema NO registra datos del cliente final que compró
+- Ejemplo: "Venta #10: $399.98 - Vendedor: Ale Peres" significa que el EMPLEADO Ale Peres fue quien atendió y registró esa venta
+
+Responde de manera concisa, profesional y útil. Usa los datos proporcionados para dar respuestas precisas y directas.
+Cuando menciones ventas, deja claro que mencionas al VENDEDOR/EMPLEADO que la realizó, no al cliente.
 """
         
         # Agregar contexto de productos
@@ -116,13 +140,36 @@ Si no tienes información suficiente, indícalo claramente.
                 ])
                 base_prompt += f"\n🏆 TOP PRODUCTOS MÁS VENDIDOS:\n{top_info}"
         
+        # Agregar información de ventas del día
+        if 'today_sales' in context:
+            today = context['today_sales']
+            base_prompt += f"""\n\n📅 VENTAS DE HOY ({context.get('current_date', 'hoy')}):
+- Total de ventas: {today['total_sales']}
+- Ingresos: ${today['total_revenue']:.2f}
+- Promedio por venta: ${today['average_sale']:.2f}
+"""
+            if today['sales_details']:
+                sales_info = "\n".join([
+                    f"  • Venta #{s['id']}: ${s['total']:.2f} - Vendedor: {s['employee_name']} - Producto: {s['product_name']} ({s['quantity']} unidades)"
+                    for s in today['sales_details'][:10]
+                ])
+                base_prompt += f"\nDetalles de ventas (cada línea muestra: ID de venta, monto, VENDEDOR que realizó la venta, producto y cantidad):\n{sales_info}"
+        
         # Agregar información de empleados
         if 'employees' in context:
             employees_info = "\n".join([
-                f"- {e['full_name']}: {e['total_sales']} ventas, ${e['total_revenue']:.2f} en ingresos"
-                for e in context['employees'][:5]
+                f"- {e['full_name']}: {e['total_sales']} ventas totales, ${e['total_revenue']:.2f} en ingresos"
+                for e in context['employees'][:10]
             ])
-            base_prompt += f"\n\n👥 EMPLEADOS:\n{employees_info}"
+            base_prompt += f"\n\n👥 EMPLEADOS (rendimiento total):\n{employees_info}"
+        
+        # Agregar ventas de empleados del día
+        if 'employees_today' in context:
+            emp_today_info = "\n".join([
+                f"- {e['full_name']}: {e['sales_today']} ventas hoy, ${e['revenue_today']:.2f}"
+                for e in context['employees_today'][:10]
+            ])
+            base_prompt += f"\n\n👥 VENTAS DE EMPLEADOS HOY:\n{emp_today_info}"
         
         # Overview general
         if 'business_overview' in context:

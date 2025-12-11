@@ -95,8 +95,8 @@ class DatabaseService:
         total_query = """
             SELECT 
                 COUNT(*) as total_sales,
-                SUM(total) as total_revenue,
-                AVG(total) as average_sale
+                SUM(total_price) as total_revenue,
+                AVG(total_price) as average_sale
             FROM sales
         """
         total_data = self.execute_query(total_query)[0]
@@ -105,9 +105,9 @@ class DatabaseService:
         recent_query = """
             SELECT 
                 COUNT(*) as recent_sales,
-                SUM(total) as recent_revenue
+                SUM(total_price) as recent_revenue
             FROM sales
-            WHERE date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            WHERE sale_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
         """
         recent_data = self.execute_query(recent_query)[0]
         
@@ -115,10 +115,10 @@ class DatabaseService:
         top_products_query = """
             SELECT 
                 p.name,
-                SUM(sd.quantity) as total_quantity,
-                SUM(sd.subtotal) as total_sales
-            FROM sale_details sd
-            INNER JOIN products p ON sd.product_id = p.id
+                SUM(s.quantity) as total_quantity,
+                SUM(s.total_price) as total_sales
+            FROM sales s
+            INNER JOIN products p ON s.product_id = p.id
             GROUP BY p.id, p.name
             ORDER BY total_quantity DESC
             LIMIT 5
@@ -134,20 +134,56 @@ class DatabaseService:
             "top_products": top_products
         }
     
+    async def get_today_sales(self) -> Dict:
+        """Obtener ventas del día actual"""
+        query = """
+            SELECT 
+                COUNT(*) as total_sales,
+                SUM(total_price) as total_revenue,
+                AVG(total_price) as average_sale
+            FROM sales
+            WHERE DATE(sale_date) = CURDATE()
+        """
+        result = self.execute_query(query)[0]
+        
+        # Obtener detalles de ventas de hoy
+        details_query = """
+            SELECT 
+                s.id,
+                s.sale_date as date,
+                s.total_price as total,
+                u.full_name as employee_name,
+                p.name as product_name,
+                s.quantity
+            FROM sales s
+            INNER JOIN users u ON s.user_id = u.id
+            INNER JOIN products p ON s.product_id = p.id
+            WHERE DATE(s.sale_date) = CURDATE()
+            ORDER BY s.sale_date DESC
+        """
+        sales_details = self.execute_query(details_query)
+        
+        return {
+            "total_sales": result.get('total_sales', 0) or 0,
+            "total_revenue": float(result.get('total_revenue', 0) or 0),
+            "average_sale": float(result.get('average_sale', 0) or 0),
+            "sales_details": sales_details
+        }
+    
     async def get_recent_sales(self, limit: int = 20) -> List[Dict]:
         """Obtener ventas recientes con detalles"""
         query = """
             SELECT 
                 s.id,
-                s.date,
-                s.total,
+                s.sale_date as date,
+                s.total_price as total,
                 u.full_name as employee_name,
-                COUNT(sd.id) as items_count
+                p.name as product_name,
+                s.quantity
             FROM sales s
             INNER JOIN users u ON s.user_id = u.id
-            LEFT JOIN sale_details sd ON s.id = sd.sale_id
-            GROUP BY s.id, s.date, s.total, u.full_name
-            ORDER BY s.date DESC
+            INNER JOIN products p ON s.product_id = p.id
+            ORDER BY s.sale_date DESC
             LIMIT %s
         """
         return self.execute_query(query, (limit,))
@@ -161,12 +197,28 @@ class DatabaseService:
                 u.email,
                 u.role,
                 COUNT(s.id) as total_sales,
-                COALESCE(SUM(s.total), 0) as total_revenue
+                COALESCE(SUM(s.total_price), 0) as total_revenue
             FROM users u
             LEFT JOIN sales s ON u.id = s.user_id
             WHERE u.role = 'employee'
             GROUP BY u.id, u.full_name, u.email, u.role
             ORDER BY total_revenue DESC
+        """
+        return self.execute_query(query)
+    
+    async def get_employees_today_sales(self) -> List[Dict]:
+        """Obtener ventas de empleados del día actual"""
+        query = """
+            SELECT 
+                u.id,
+                u.full_name,
+                COUNT(s.id) as sales_today,
+                COALESCE(SUM(s.total_price), 0) as revenue_today
+            FROM users u
+            LEFT JOIN sales s ON u.id = s.user_id AND DATE(s.sale_date) = CURDATE()
+            WHERE u.role = 'employee'
+            GROUP BY u.id, u.full_name
+            ORDER BY revenue_today DESC
         """
         return self.execute_query(query)
     

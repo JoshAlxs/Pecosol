@@ -157,4 +157,25 @@ class User {
     public function verifyPassword(string $plainPassword, string $hashedPassword): bool {
         return password_verify($plainPassword, $hashedPassword);
     }
+
+    /**
+     * updateProfile($id, $username, $fullName, $email)
+     * - Actualiza datos del perfil de usuario (username, full_name, email).
+     * - Devuelve true si la actualización fue exitosa, o false en caso contrario.
+     */
+    public function updateProfile(int $id, string $username, string $fullName, string $email): bool {
+        $sql = "
+            UPDATE {$this->table}
+            SET username  = :username,
+                full_name = :full_name,
+                email     = :email
+            WHERE id = :id
+        ";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':username',  $username);
+        $stmt->bindParam(':full_name', $fullName);
+        $stmt->bindParam(':email',     $email);
+        $stmt->bindParam(':id',        $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
 }
